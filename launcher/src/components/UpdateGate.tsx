@@ -1,6 +1,5 @@
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
-import { motion } from 'framer-motion';
 import { useEffect, useState, type ReactNode } from 'react';
 import { formatBytes } from '../lib/format';
 import { inTauri } from '../lib/native';
@@ -46,23 +45,26 @@ export function UpdateGate({ children }: { children: ReactNode }) {
   if (gate.kind === 'ready') return <>{children}</>;
   return (
     <div className="grid h-full place-items-center bg-bg">
-      <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className="w-72 text-center">
-        <div className="mx-auto mb-5 grid size-14 place-items-center rounded-2xl bg-accent text-2xl font-black text-black/85 shadow-[0_14px_50px_-12px_var(--accent)]">L</div>
+      <div className="w-64">
+        <div className="mb-5 flex items-center gap-2.5">
+          <span className="size-3 rounded-[3px] bg-accent" />
+          <span className="font-[family-name:var(--font-display)] text-lg font-semibold">Launcher</span>
+        </div>
         {gate.kind === 'checking' ? (
           <>
-            <p className="mb-4 text-sm text-muted">Recherche de mises à jour…</p>
+            <p className="mb-3 text-[13px] text-muted">Recherche de mises à jour</p>
             <ProgressBar value={0} indeterminate />
           </>
         ) : (
           <>
-            <p className="mb-1 text-sm font-medium">Mise à jour {gate.version}</p>
-            <p className="mb-4 text-xs text-muted">
-              {gate.total ? `${formatBytes(gate.done)} / ${formatBytes(gate.total)}` : 'Téléchargement…'}
+            <p className="mb-3 text-[13px] text-muted">
+              Mise à jour {gate.version}
+              {gate.total > 0 && <span className="tabular-nums"> — {formatBytes(gate.done)} / {formatBytes(gate.total)}</span>}
             </p>
             <ProgressBar value={gate.total ? gate.done / gate.total : 0} indeterminate={!gate.total} />
           </>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }

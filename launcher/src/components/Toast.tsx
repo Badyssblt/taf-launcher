@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useStore } from '../store';
 
 export function Toast() {
@@ -10,14 +9,13 @@ export function Toast() {
         {toast && (
           <motion.div
             key={toast.id}
-            initial={{ opacity: 0, y: 12, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8 }}
-            className={`flex max-w-sm items-center gap-2.5 rounded-xl border bg-surface-2 px-4 py-3 text-sm shadow-2xl ${
-              toast.kind === 'error' ? 'border-danger/40' : 'border-line'
-            }`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 38 }}
+            className="flex max-w-sm items-start gap-3 rounded-lg bg-raise-2 px-4 py-3 text-[14px] shadow-[0_8px_30px_rgb(0_0_0/0.4)]"
           >
-            {toast.kind === 'error' ? <AlertCircle className="size-4 shrink-0 text-danger" /> : <CheckCircle2 className="size-4 shrink-0 text-ok" />}
+            <span className={`mt-[7px] size-2 shrink-0 rounded-full ${toast.kind === 'error' ? 'bg-danger' : 'bg-ok'}`} />
             {toast.text}
           </motion.div>
         )}

@@ -1,8 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Download, FolderOpen, MoreHorizontal, Play, RefreshCw, ShieldCheck, Square, Trash2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { Button, Card, GameIcon, Notes } from '../components/ui';
-import { formatDate } from '../lib/format';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Button, GameIcon, Notes, Section, Timeline } from '../components/ui';
+import { formatDate, formatShortDate } from '../lib/format';
 import { native } from '../lib/native';
 import { releaseFor, useStore, type Channel } from '../store';
 
@@ -35,147 +35,149 @@ export function GamePage({ slug }: { slug: string }) {
   const hasBeta = game.latest?.beta != null;
   const gameNews = s.news.filter((n) => n.gameSlug === slug);
 
-  let action: React.ReactNode;
+  let action: ReactNode;
   if (busy) {
     action = (
-      <Button size="lg" variant="secondary" onClick={() => s.cancel(slug)}>
-        <Square className="size-4 fill-current" /> Annuler
+      <Button size="lg" onClick={() => s.cancel(slug)}>
+        <Square className="size-3.5 fill-current" /> Annuler
       </Button>
     );
   } else if (running) {
     action = (
-      <Button size="lg" variant="secondary" disabled>
-        En cours…
+      <Button size="lg" disabled>
+        En cours
       </Button>
     );
   } else if (!isInstalled) {
     action = (
       <Button size="lg" variant="primary" disabled={!release} onClick={() => s.install(slug)}>
-        <Download className="size-5" /> {release ? 'Installer' : 'Bientôt disponible'}
+        <Download className="size-[18px]" /> {release ? 'Installer' : 'Bientôt disponible'}
       </Button>
     );
   } else if (hasUpdate) {
     action = (
       <Button size="lg" variant="primary" onClick={() => s.install(slug)}>
-        <RefreshCw className="size-5" /> Mettre à jour
+        <RefreshCw className="size-[18px]" /> Mettre à jour
       </Button>
     );
   } else {
     action = (
       <Button size="lg" variant="primary" onClick={() => s.play(slug)}>
-        <Play className="size-5 fill-current" /> Jouer
+        <Play className="size-[18px] fill-current" /> Jouer
       </Button>
     );
   }
 
+  const status = busy
+    ? 'Installation en cours'
+    : running
+      ? 'Le jeu est lancé'
+      : hasUpdate && release
+        ? `Version ${release.version} disponible, installée : ${installedVersion}`
+        : isInstalled
+          ? `Version ${installedVersion} installée`
+          : release
+            ? `Version ${release.version}`
+            : 'Aucune version publiée';
+
   return (
     <div className="min-h-full">
-      <div className="relative overflow-hidden border-b border-line">
-        {game.bannerUrl && <img src={game.bannerUrl} alt="" className="absolute inset-0 size-full object-cover opacity-30 blur-[2px]" draggable={false} />}
-        <div className="absolute inset-0 bg-[radial-gradient(900px_300px_at_20%_0%,color-mix(in_srgb,var(--accent)_28%,transparent),transparent_70%)]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/60 to-transparent" />
-        <div className="relative flex items-end gap-6 px-8 pb-7 pt-14">
-          <GameIcon game={game} size={88} />
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-3xl font-bold tracking-tight">{game.name}</h1>
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-              {isInstalled && <span>Version installée {installedVersion}</span>}
-              {release && !isInstalled && <span>Version {release.version}</span>}
-              {hasUpdate && release && <span className="text-accent">Mise à jour {release.version} disponible</span>}
-              {channel === 'beta' && <span className="rounded bg-accent/15 px-1.5 py-0.5 text-xs font-medium text-accent">BÊTA</span>}
-              {!game.published && <span className="rounded bg-surface-3 px-1.5 py-0.5 text-xs">Brouillon (admin)</span>}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {action}
-            <div className="relative" ref={menuRef}>
-              <Button variant="secondary" className="size-14 !rounded-xl !px-0" onClick={() => setMenu((v) => !v)} aria-label="Options">
-                <MoreHorizontal className="size-5" />
-              </Button>
-              <AnimatePresence>
-                {menu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    className="absolute right-0 top-16 z-20 w-64 space-y-0.5 rounded-xl border border-line bg-surface-2 p-1.5 shadow-2xl"
-                  >
-                    {hasBeta && (
-                      <div className="flex gap-1 p-1">
-                        {(['stable', 'beta'] as const).map((c) => (
-                          <button
-                            key={c}
-                            onClick={() => s.setChannel(slug, c)}
-                            className={`h-8 flex-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${channel === c ? 'bg-accent text-black/90' : 'bg-surface-3 text-muted hover:text-fg'}`}
-                          >
-                            {c === 'stable' ? 'Stable' : 'Bêta'}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    <MenuItem icon={<ShieldCheck className="size-4" />} disabled={!isInstalled || busy || !release} onClick={() => { setMenu(false); s.install(slug, true); }}>
-                      Vérifier les fichiers
-                    </MenuItem>
-                    <MenuItem icon={<FolderOpen className="size-4" />} disabled={!isInstalled} onClick={() => { setMenu(false); native.openFolder(slug, s.libraryDir).catch((e) => s.notify(String(e), 'error')); }}>
-                      Ouvrir le dossier
-                    </MenuItem>
-                    <MenuItem
-                      icon={<Trash2 className="size-4" />}
-                      danger
-                      disabled={!isInstalled || busy || running}
-                      onClick={() => {
-                        if (!confirmDelete) return setConfirmDelete(true);
-                        setMenu(false);
-                        setConfirmDelete(false);
-                        s.uninstall(slug);
-                      }}
-                    >
-                      {confirmDelete ? 'Confirmer la désinstallation' : 'Désinstaller'}
-                    </MenuItem>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+      <header
+        className="relative px-10 pb-7 pt-9"
+        style={{ background: 'linear-gradient(to bottom, color-mix(in srgb, var(--accent) 17%, var(--color-bg)), var(--color-bg))' }}
+      >
+        {game.bannerUrl && <img src={game.bannerUrl} alt="" className="pointer-events-none absolute inset-0 size-full object-cover opacity-[0.12]" draggable={false} />}
+        <div className="relative flex items-center gap-5">
+          <GameIcon game={game} size={72} />
+          <div className="min-w-0">
+            <h1 className="truncate text-[40px] font-bold leading-none tracking-tight">{game.name}</h1>
+            {!game.published && <div className="mt-2 text-[13px] text-muted">Brouillon, visible par les administrateurs seulement</div>}
           </div>
         </div>
-      </div>
 
-      <div className="grid gap-5 p-8 lg:grid-cols-[1fr_300px]">
-        <div className="space-y-5">
+        <div className="relative mt-7 flex items-center gap-4">
+          {action}
+          <div className="relative" ref={menuRef}>
+            <Button size="lg" className="!px-3" onClick={() => setMenu((v) => !v)} aria-label="Options" aria-expanded={menu}>
+              <MoreHorizontal className="size-5" />
+            </Button>
+            <AnimatePresence>
+              {menu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, transition: { duration: 0.08 } }}
+                  transition={{ type: 'spring', stiffness: 600, damping: 40 }}
+                  className="absolute left-0 top-full z-20 mt-2 w-60 origin-top-left rounded-[10px] bg-raise-2 p-1.5 shadow-[0_12px_40px_rgb(0_0_0/0.5)]"
+                >
+                  {hasBeta && (
+                    <div className="mb-1 flex gap-1 rounded-md bg-side p-1">
+                      {(['stable', 'beta'] as const).map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => s.setChannel(slug, c)}
+                          className={`h-7 flex-1 cursor-pointer rounded text-[13px] font-medium transition-colors ${channel === c ? 'bg-raise-2 text-fg' : 'text-muted hover:text-fg'}`}
+                        >
+                          {c === 'stable' ? 'Stable' : 'Bêta'}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <MenuItem icon={<ShieldCheck className="size-4" />} disabled={!isInstalled || busy || !release} onClick={() => { setMenu(false); s.install(slug, true); }}>
+                    Vérifier les fichiers
+                  </MenuItem>
+                  <MenuItem icon={<FolderOpen className="size-4" />} disabled={!isInstalled} onClick={() => { setMenu(false); native.openFolder(slug, s.libraryDir).catch((e) => s.notify(String(e), 'error')); }}>
+                    Ouvrir le dossier
+                  </MenuItem>
+                  <MenuItem
+                    icon={<Trash2 className="size-4" />}
+                    danger
+                    disabled={!isInstalled || busy || running}
+                    onClick={() => {
+                      if (!confirmDelete) return setConfirmDelete(true);
+                      setMenu(false);
+                      setConfirmDelete(false);
+                      s.uninstall(slug);
+                    }}
+                  >
+                    {confirmDelete ? 'Confirmer la désinstallation' : 'Désinstaller'}
+                  </MenuItem>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          <span className="text-[13px] tabular-nums text-muted">
+            {status}
+            {channel === 'beta' && ' · bêta'}
+          </span>
+        </div>
+      </header>
+
+      <div className="grid gap-12 px-10 pb-12 pt-6 lg:grid-cols-[minmax(0,1fr)_240px]">
+        <div className="min-w-0">
           {game.description && (
-            <Card title="À propos">
-              <p className="whitespace-pre-line text-sm leading-relaxed text-muted">{game.description}</p>
-            </Card>
+            <Section title="À propos">
+              <p className="max-w-[68ch] whitespace-pre-line text-sm leading-relaxed text-muted">{game.description}</p>
+            </Section>
           )}
           {release?.notes && (
-            <Card title={`Notes de version ${release.version}`}>
+            <Section title={`Version ${release.version}`}>
               <Notes text={release.notes} />
-            </Card>
+            </Section>
           )}
           {gameNews.length > 0 && (
-            <Card title="Actualités">
-              <div className="divide-y divide-line">
-                {gameNews.map((n) => (
-                  <article key={n.id} className="py-3 first:pt-0 last:pb-0">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <h4 className="font-semibold">{n.title}</h4>
-                      <time className="shrink-0 text-xs text-muted">{formatDate(n.createdAt)}</time>
-                    </div>
-                    {n.body && <p className="mt-1 whitespace-pre-line text-sm text-muted">{n.body}</p>}
-                  </article>
-                ))}
-              </div>
-            </Card>
+            <Section title="Actualités">
+              <Timeline items={gameNews.map((n) => ({ id: n.id, date: formatShortDate(n.createdAt), title: n.title, body: n.body }))} />
+            </Section>
           )}
         </div>
-        <Card title="Informations" className="h-fit">
-          <dl className="space-y-3 text-sm">
-            <Row label="Installé" value={installedVersion ?? 'Non'} />
-            <Row label="Dernière version" value={release?.version ?? '—'} />
-            {release?.publishedAt && <Row label="Publiée le" value={formatDate(release.publishedAt)} />}
-            <Row label="Canal" value={channel === 'beta' ? 'Bêta' : 'Stable'} />
-          </dl>
-        </Card>
+
+        <dl className="h-fit text-[13px]">
+          <Row label="Installée" value={installedVersion ?? 'Non'} />
+          <Row label="Dernière version" value={release?.version ?? '—'} />
+          {release?.publishedAt && <Row label="Publiée le" value={formatDate(release.publishedAt)} />}
+          <Row label="Canal" value={channel === 'beta' ? 'Bêta' : 'Stable'} />
+        </dl>
       </div>
     </div>
   );
@@ -183,19 +185,19 @@ export function GamePage({ slug }: { slug: string }) {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-3">
+    <div className="flex items-baseline justify-between gap-3 border-b border-line py-2.5 first:pt-0">
       <dt className="text-muted">{label}</dt>
-      <dd className="truncate font-medium">{value}</dd>
+      <dd className="truncate font-medium tabular-nums">{value}</dd>
     </div>
   );
 }
 
-function MenuItem({ icon, children, onClick, disabled, danger }: { icon: React.ReactNode; children: React.ReactNode; onClick: () => void; disabled?: boolean; danger?: boolean }) {
+function MenuItem({ icon, children, onClick, disabled, danger }: { icon: ReactNode; children: ReactNode; onClick: () => void; disabled?: boolean; danger?: boolean }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-sm transition-colors disabled:pointer-events-none disabled:opacity-40 cursor-pointer ${danger ? 'text-danger hover:bg-danger/10' : 'text-fg hover:bg-surface-3'}`}
+      className={`flex h-8 w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-left text-[13px] transition-colors disabled:pointer-events-none disabled:opacity-40 ${danger ? 'text-danger hover:bg-danger/10' : 'text-fg hover:bg-white/5'}`}
     >
       {icon}
       {children}

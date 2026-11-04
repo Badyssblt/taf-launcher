@@ -1,22 +1,19 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
-import { motion } from 'framer-motion';
 import { Button, Field, inputClass } from '../components/ui';
 import { useStore } from '../store';
 
-function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
+function AuthShell({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
-    <div className="relative grid h-full place-items-center overflow-hidden px-6">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(700px_420px_at_50%_-10%,color-mix(in_srgb,var(--accent)_22%,transparent),transparent_70%)]" />
-      <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="relative w-full max-w-sm">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="grid size-11 place-items-center rounded-xl bg-accent text-lg font-black text-black/85 shadow-[0_10px_40px_-10px_var(--accent)]">L</div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">{title}</h1>
-            <p className="text-sm text-muted">{subtitle}</p>
-          </div>
+    <div className="grid flex-1 place-items-center overflow-y-auto px-6">
+      <div className="w-full max-w-[320px]">
+        <div className="mb-8 flex items-center gap-2.5">
+          <span className="size-3 rounded-[3px] bg-accent" />
+          <span className="font-[family-name:var(--font-display)] text-[17px] font-semibold">Launcher</span>
         </div>
-        <div className="rounded-2xl border border-line bg-surface p-6 shadow-2xl">{children}</div>
-      </motion.div>
+        <h1 className="text-[28px] font-bold leading-tight tracking-tight">{title}</h1>
+        {hint && <p className="mt-2 text-[14px] text-muted">{hint}</p>}
+        <div className="mt-7">{children}</div>
+      </div>
     </div>
   );
 }
@@ -39,13 +36,15 @@ function useSubmit(fn: () => Promise<void>) {
   return { error, loading, onSubmit };
 }
 
+const Error_ = ({ text }: { text: string }) => (text ? <p role="alert" className="text-[13px] text-danger">{text}</p> : null);
+
 export function Login() {
   const login = useStore((s) => s.login);
   const [id, setId] = useState('');
   const [pw, setPw] = useState('');
   const { error, loading, onSubmit } = useSubmit(() => login(id.trim(), pw));
   return (
-    <AuthShell title="Connexion" subtitle="Accède à ta bibliothèque">
+    <AuthShell title="Connexion" hint="Les comptes sont créés par un administrateur.">
       <form onSubmit={onSubmit} className="grid gap-4">
         <Field label="Pseudo ou e-mail">
           <input className={inputClass} value={id} onChange={(e) => setId(e.target.value)} autoFocus autoComplete="username" required />
@@ -53,11 +52,10 @@ export function Login() {
         <Field label="Mot de passe">
           <input className={inputClass} type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="current-password" required />
         </Field>
-        {error && <p className="text-sm text-danger">{error}</p>}
-        <Button type="submit" variant="primary" loading={loading} className="mt-1">
+        <Error_ text={error} />
+        <Button type="submit" variant="primary" size="lg" loading={loading} className="mt-1 w-full">
           Se connecter
         </Button>
-        <p className="text-center text-xs text-muted">Les comptes sont créés par un administrateur.</p>
       </form>
     </AuthShell>
   );
@@ -74,7 +72,7 @@ export function ChangePassword() {
     await changePassword(cur, next);
   });
   return (
-    <AuthShell title="Nouveau mot de passe" subtitle="Choisis un mot de passe personnel">
+    <AuthShell title="Nouveau mot de passe" hint="Remplace le mot de passe temporaire par le tien.">
       <form onSubmit={onSubmit} className="grid gap-4">
         <Field label="Mot de passe actuel">
           <input className={inputClass} type="password" value={cur} onChange={(e) => setCur(e.target.value)} autoFocus autoComplete="current-password" required />
@@ -85,13 +83,13 @@ export function ChangePassword() {
         <Field label="Confirmation">
           <input className={inputClass} type="password" value={again} onChange={(e) => setAgain(e.target.value)} autoComplete="new-password" required />
         </Field>
-        {error && <p className="text-sm text-danger">{error}</p>}
-        <Button type="submit" variant="primary" loading={loading} className="mt-1">
+        <Error_ text={error} />
+        <Button type="submit" variant="primary" size="lg" loading={loading} className="mt-1 w-full">
           Enregistrer
         </Button>
-        <button type="button" onClick={logout} className="text-xs text-muted hover:text-fg cursor-pointer">
+        <Button type="button" variant="ghost" onClick={logout} className="w-full">
           Se déconnecter
-        </button>
+        </Button>
       </form>
     </AuthShell>
   );

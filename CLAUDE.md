@@ -13,6 +13,11 @@ Backend Fastify sur le VPS, application Tauri 2 + React. Voir `README.md` pour l
 - **Le jeu ne doit jamais faire confiance à `-AccountID` seul** : il vérifie le ticket signé (voir `docs/GAME_INTEGRATION.md`).
 - **Commits** : à chaque étape stable (tests verts). Fins de ligne LF (`.gitattributes`).
 
+## Design
+
+Toute modification d'interface suit `docs/DESIGN.md` (tokens, typographie, structure, mouvement). Utiliser le skill `frontend-design`.
+Vérifier le rendu au navigateur (taille 1180x740 puis 960x600) avant de conclure.
+
 ## Pièges appris
 
 - Fastify refuse `content-type: application/json` avec un corps vide : un parseur tolérant est installé dans `app.ts` (les clients envoient l'en-tête sur les DELETE). Les tests via `inject` ne le détectent pas sans en-tête explicite.
