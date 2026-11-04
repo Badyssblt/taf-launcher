@@ -166,7 +166,9 @@ fn open_folder(slug: String, library_dir: String) -> Result<(), String> {
 }
 
 fn entry() -> Result<keyring::Entry, String> {
-    keyring::Entry::new(KEYRING_SERVICE, "refresh-token").map_err(|e| e.to_string())
+    // LAUNCHER_KEYRING_SERVICE permet d'isoler un launcher de test (autre API) du trousseau du vrai launcher.
+    let service = std::env::var("LAUNCHER_KEYRING_SERVICE").unwrap_or_else(|_| KEYRING_SERVICE.to_string());
+    keyring::Entry::new(&service, "refresh-token").map_err(|e| e.to_string())
 }
 
 #[tauri::command]
