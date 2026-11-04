@@ -1,0 +1,42 @@
+@import '@fontsource-variable/inter';
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter Variable', system-ui, sans-serif;
+  --color-bg: #090b0f;
+  --color-surface: #10131a;
+  --color-surface-2: #161a23;
+  --color-surface-3: #1d222d;
+  --color-line: #232936;
+  --color-fg: #e9ecf3;
+  --color-muted: #8791a7;
+  --color-danger: #f0585b;
+  --color-ok: #34c77b;
+  --color-accent: var(--accent);
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+}
+
+:root {
+  --accent: #f59e0b;
+  color-scheme: dark;
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+input, textarea { user-select: text; }
+* { scrollbar-width: thin; scrollbar-color: #2a3140 transparent; }
+::selection { background: color-mix(in srgb, var(--accent) 40%, transparent); }
+:focus-visible { outline: 2px solid color-mix(in srgb, var(--accent) 70%, white); outline-offset: 2px; }

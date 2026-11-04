@@ -18,6 +18,15 @@ export async function buildApp(ctx: Ctx, opts: { logger?: boolean } = {}) {
     bodyLimit: 256 * 1024,
   });
 
+  // Les clients (navigateur, launcher) envoient "content-type: application/json" meme sans corps (DELETE, POST
+  // sans donnees) : Fastify refuserait ces requetes par defaut. Un corps vide devient simplement "pas de corps".
+  const defaultJsonParser = app.getDefaultJsonParser('error', 'ignore');
+  app.removeContentTypeParser('application/json');
+  app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body, done) => {
+    if (body === '') return done(null, undefined);
+    defaultJsonParser(req, body as string, done);
+  });
+
   await app.register(helmet, {
     contentSecurityPolicy: {
       directives: {

@@ -1,0 +1,65 @@
+name: Release du launcher
+
+# Publier une version : git tag v0.2.0 && git push origin v0.2.0
+# Le workflow compile l'installeur Windows, le signe et publie la release avec latest.json,
+# que les launchers deja installes lisent pour se mettre a jour tout seuls.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: launcher/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            launcher/src-tauri
+            launcher/installer-core
+
+      # La version du tag devient celle de l'application (le numero compare par l'updater).
+      - name: Appliquer la version du tag
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          node -e "
+            const fs=require('fs');
+            const f='launcher/src-tauri/tauri.conf.json';
+            const c=JSON.parse(fs.readFileSync(f,'utf8'));
+            c.version='$VERSION';
+            fs.writeFileSync(f, JSON.stringify(c,null,2)+'\n');
+          "
+          sed -i "0,/^version = .*/s//version = \"$VERSION\"/" launcher/src-tauri/Cargo.toml
+
+      - run: npm ci
+        working-directory: launcher
+
+      - name: Tests du moteur d'installation
+        run: cargo test
+        working-directory: launcher/installer-core
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: launcher
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Launcher ${{ github.ref_name }}'
+          releaseBody: 'Installe le fichier `.exe`. Les launchers déjà installés se mettent à jour automatiquement au démarrage.'
+          releaseDraft: false
+          prerelease: false
+          includeUpdaterJson: true

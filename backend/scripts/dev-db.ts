@@ -5,7 +5,15 @@ import { existsSync } from 'node:fs';
 
 const databaseDir = '.data/pg';
 const fresh = !existsSync(databaseDir);
-const pg = new EmbeddedPostgres({ databaseDir, user: 'postgres', password: 'postgres', port: 54329, persistent: true });
+// UTF-8 force : sous Windows initdb choisit sinon WIN1252, ce qui rejette certains caracteres (la prod est en UTF-8).
+const pg = new EmbeddedPostgres({
+  databaseDir,
+  user: 'postgres',
+  password: 'postgres',
+  port: 54329,
+  persistent: true,
+  initdbFlags: ['--encoding=UTF8', '--locale=C'],
+});
 
 if (fresh) await pg.initialise();
 await pg.start();

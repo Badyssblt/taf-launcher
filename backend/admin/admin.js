@@ -43,7 +43,7 @@ async function refreshSession() {
 async function api(method, path, body, retry = true) {
   const res = await fetch(path, {
     method,
-    headers: { 'content-type': 'application/json', ...(store.access ? { authorization: `Bearer ${store.access}` } : {}) },
+    headers: { ...(body === undefined ? {} : { 'content-type': 'application/json' }), ...(store.access ? { authorization: `Bearer ${store.access}` } : {}) },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (res.status === 401 && retry && store.refresh) {

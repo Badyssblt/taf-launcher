@@ -1,0 +1,50 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Launcher",
+  "version": "0.1.0",
+  "identifier": "fr.badyssblilita.launcher",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Launcher",
+        "width": 1180,
+        "height": 740,
+        "minWidth": 960,
+        "minHeight": 600,
+        "decorations": false,
+        "center": true,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: http:; font-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost https://launcher.badyssblilita.fr http://localhost:3000 http://localhost:1420 ws://localhost:1420"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "createUpdaterArtifacts": true,
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["French"]
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVFQjNGRkM2OEI1QjlBNTkKUldSWm1sdUx4dit6N2d1ZjVHUXJDL0t2cXJ6QWlzZ1FUcWE1Zm01NWY0SFF2R2xsMkFVYjRuK3kK",
+      "endpoints": ["https://github.com/Badyssblt/taf-launcher/releases/latest/download/latest.json"],
+      "windows": { "installMode": "passive" }
+    }
+  }
+}

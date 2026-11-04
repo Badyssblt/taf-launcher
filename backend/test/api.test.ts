@@ -47,7 +47,14 @@ async function call(method: string, url: string, opts: { token?: string; body?: 
 }
 
 before(async () => {
-  pg = new EmbeddedPostgres({ databaseDir: dir, user: 'postgres', password: 'postgres', port: PORT, persistent: false });
+  pg = new EmbeddedPostgres({
+    databaseDir: dir,
+    user: 'postgres',
+    password: 'postgres',
+    port: PORT,
+    persistent: false,
+    initdbFlags: ['--encoding=UTF8', '--locale=C'],
+  });
   await pg.initialise();
   await pg.start();
   await pg.createDatabase('taf');
@@ -197,6 +204,15 @@ describe('backend', () => {
     assert.deepEqual(adminSlugs, ['brouillon', 'demo', 'ouvert']);
   });
 
+  it('stocke les caracteres Unicode sans perte', async () => {
+    const text = 'Jeu de rôle — événements 日本語 🎮';
+    const created = await call('POST', '/api/admin/news', { token: adminToken, body: { title: text, body: text } });
+    assert.equal(created.status, 201);
+    const list = await call('GET', '/api/admin/news', { token: adminToken });
+    assert.ok(list.json.some((n: any) => n.title === text && n.body === text));
+    await app.inject({ method: 'DELETE', url: `/api/admin/news/${created.json.id}`, headers: { authorization: `Bearer ${adminToken}` } });
+  });
+
   it('gere les actualites', async () => {
     await call('POST', '/api/admin/news', { token: adminToken, body: { gameId: null, title: 'Bienvenue', body: 'Salut' } });
     await call('POST', '/api/admin/news', { token: adminToken, body: { gameId, title: 'Patch 1.4', body: 'Correctifs' } });
@@ -212,6 +228,19 @@ describe('backend', () => {
     assert.equal(off.status, 200);
     assert.equal((await call('GET', '/api/me', { token: userToken })).status, 401);
     assert.equal((await call('POST', '/api/auth/login', { body: { login: 'alice', password: 'nouveau-mdp-9' } })).status, 403);
+  });
+
+  it('accepte un content-type JSON sans corps (DELETE, POST sans donnees), comme le font les clients', async () => {
+    const admin = await call('POST', '/api/auth/login', { body: { login: 'root', password: 'rootpassword1' } });
+    const auth = { authorization: `Bearer ${admin.json.accessToken}`, 'content-type': 'application/json' };
+    const made = await app.inject({ method: 'POST', url: '/api/admin/news', headers: auth, payload: { title: 'a supprimer' } });
+    assert.equal(made.statusCode, 201);
+    const del = await app.inject({ method: 'DELETE', url: `/api/admin/news/${made.json().id}`, headers: auth });
+    assert.equal(del.statusCode, 204);
+    const ticket = await app.inject({ method: 'POST', url: '/api/games/demo/ticket', headers: auth });
+    assert.equal(ticket.statusCode, 200);
+    const bad = await app.inject({ method: 'POST', url: '/api/auth/logout', headers: auth, payload: '{pas du json' });
+    assert.equal(bad.statusCode, 400);
   });
 
   it('expose la cle publique et le JWKS', async () => {
