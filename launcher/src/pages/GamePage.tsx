@@ -82,10 +82,7 @@ export function GamePage({ slug }: { slug: string }) {
 
   return (
     <div className="min-h-full">
-      <header
-        className="relative px-10 pb-7 pt-9"
-        style={{ background: 'linear-gradient(to bottom, color-mix(in srgb, var(--accent) 17%, var(--color-bg)), var(--color-bg))' }}
-      >
+      <header className="relative border-b border-line bg-raise px-10 pb-7 pt-9">
         {game.bannerUrl && <img src={game.bannerUrl} alt="" className="pointer-events-none absolute inset-0 size-full object-cover opacity-[0.12]" draggable={false} />}
         <div className="relative flex items-center gap-5">
           <GameIcon game={game} size={72} />
@@ -108,7 +105,7 @@ export function GamePage({ slug }: { slug: string }) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, transition: { duration: 0.08 } }}
                   transition={{ type: 'spring', stiffness: 600, damping: 40 }}
-                  className="absolute left-0 top-full z-20 mt-2 w-60 origin-top-left rounded-[10px] bg-raise-2 p-1.5 shadow-[0_12px_40px_rgb(0_0_0/0.5)]"
+                  className="absolute left-0 top-full z-20 mt-2 w-60 origin-top-left rounded-[10px] border border-line bg-raise-2 p-1.5"
                 >
                   {hasBeta && (
                     <div className="mb-1 flex gap-1 rounded-md bg-side p-1">

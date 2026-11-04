@@ -18,14 +18,15 @@
   --font-sans: 'Geist Variable', system-ui, sans-serif;
   --font-display: 'Bricolage Grotesque Variable', 'Geist Variable', system-ui, sans-serif;
 
-  --color-bg: #14181f;
-  --color-side: #0f1217;
-  --color-raise: #1a2029;
-  --color-raise-2: #232b37;
-  --color-line: #2a323e;
-  --color-fg: #e6eaf0;
-  --color-muted: #8b95a5;
-  --color-faint: #5f6978;
+  /* Graphite neutre : aucune dominante de couleur, l'accent du jeu est la seule teinte. */
+  --color-bg: #232325;
+  --color-side: #19191b;
+  --color-raise: #2c2c2f;
+  --color-raise-2: #353539;
+  --color-line: #3b3b40;
+  --color-fg: #f1f1f3;
+  --color-muted: #a3a3ab;
+  --color-faint: #74747c;
   --color-ok: #4fc08d;
   --color-danger: #ef6461;
   --color-accent: var(--accent);

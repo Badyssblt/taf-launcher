@@ -13,7 +13,7 @@ export function Toast() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-            className="flex max-w-sm items-start gap-3 rounded-lg bg-raise-2 px-4 py-3 text-[14px] shadow-[0_8px_30px_rgb(0_0_0/0.4)]"
+            className="flex max-w-sm items-start gap-3 rounded-lg border border-line bg-raise-2 px-4 py-3 text-[14px]"
           >
             <span className={`mt-[7px] size-2 shrink-0 rounded-full ${toast.kind === 'error' ? 'bg-danger' : 'bg-ok'}`} />
             {toast.text}

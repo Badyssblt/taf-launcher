@@ -1,49 +1,50 @@
 # Design du launcher
 
 Demande : simple et moderne, style Steam multi-jeux, sobre sans être fade, sans grande illustration.
+**Pas de dégradés, de glassmorphism, de lueurs ni d'ombres décoratives** (retiré à la demande de l'utilisateur).
 
 ## Idée directrice
 
-L'interface est neutre ; **la couleur vient du jeu affiché**. Passer d'un jeu à l'autre teinte toute l'interface
-(bouton, en-tête, repères) à la couleur d'accent du jeu, en fondu de 350 ms. C'est le seul moment « marquant » ;
-tout le reste est discret.
+Interface en graphite neutre, entièrement à plat. **La seule couleur vient du jeu affiché** : icône, bouton principal,
+repères. Passer d'un jeu à l'autre change l'accent en fondu de 350 ms (variable `--accent`, réglée dans le panneau
+d'admin, champ « Couleur d'accent »).
 
 ## Tokens (`src/styles.css`)
 
 | Rôle | Valeur |
 |---|---|
-| Fenêtre / contenu (`bg`) | `#14181f` (ardoise bleutée, pas de noir pur) |
-| Barre latérale et titre (`side`) | `#0f1217` |
-| Survol / champs (`raise`, `raise-2`) | `#1a2029`, `#232b37` |
-| Filets (`line`) | `#2a323e`, utilisés seulement quand ils structurent |
-| Texte / secondaire / discret | `#e6eaf0` / `#8b95a5` / `#5f6978` |
-| Accent | variable `--accent`, fixée par le jeu (admin : champ « Couleur d'accent ») ; `--accent-ink` (noir ou blanc) calculé pour rester lisible |
+| Contenu (`bg`) | `#232325` |
+| Barre latérale et titre (`side`) | `#19191b` |
+| Blocs, champs, survol (`raise`, `raise-2`) | `#2c2c2f`, `#353539` |
+| Filets (`line`) | `#3b3b40` |
+| Texte / secondaire / discret | `#f1f1f3` / `#a3a3ab` / `#74747c` |
+| Accent | `--accent` (jeu) ; `--accent-ink` (noir ou blanc) calculé pour rester lisible |
 
-Accent sans jeu (accueil, paramètres) : `#8ab4ff`.
+Accent sans jeu (accueil, paramètres) : `#8ab4ff`. Changer l'ambiance = modifier ces sept valeurs, rien d'autre.
 
 ## Typographie
 
-- Titres : **Bricolage Grotesque** (variable), serré (`-0.01em`), 30 à 40 px pour les titres de page.
-- Texte : **Geist** (variable), 14 px ; chiffres tabulaires (`tabular-nums`) pour versions, tailles, vitesses, dates.
+- Titres : **Bricolage Grotesque** (variable), 30 à 40 px pour les titres de page.
+- Texte : **Geist** (variable), 14 px ; chiffres tabulaires pour versions, tailles, vitesses, dates.
 - Longueur de ligne ≤ 68 caractères. Casse de phrase, jamais de majuscules d'étiquette.
 
 ## Structure
 
-- Pas de cartes : les sections sont à plat (titre + contenu), séparées par un filet. Seules les tuiles de jeu de l'accueil sont des blocs, teintés à la couleur du jeu.
+- Pas de cartes : sections à plat (titre + contenu) séparées par un filet. Seules les tuiles de jeu de l'accueil sont des blocs.
 - Actualités en chronologie : la date à gauche, le contenu à droite.
 - Rayons différenciés : champs et boutons 6 px, tuiles et menus 10 px, icônes de jeu 20 % de leur taille.
-- Page de jeu : en-tête teinté, titre, **Jouer** (ou Installer / Mettre à jour) + menu + état en une ligne, puis contenu à gauche et fiche d'informations à droite (empilés sous ~1000 px).
+- Séparation par les tons (`side` < `bg` < `raise`) et par des filets d'1 px, jamais par des ombres.
+- Page de jeu : bandeau d'en-tête uni, titre, **Jouer** (ou Installer / Mettre à jour) + menu + état en une ligne, puis contenu à gauche et fiche d'informations à droite (empilés sous ~1000 px).
 
 ## Mouvement
 
 Seulement ce qui répond à une action : appui sur un bouton (échelle 0,97, 100 ms), ouverture du menu (ressort),
-notification, barre de progression, et le fondu de couleur au changement de jeu. Aucune entrée en fondu des pages.
-`prefers-reduced-motion` est respecté.
+notification, barre de progression, fondu de l'accent au changement de jeu. `prefers-reduced-motion` est respecté.
 
 ## À éviter
 
-Lueurs autour des boutons, dégradés décoratifs, un seul mot coloré dans un titre, étiquettes en majuscules, textes
-d'introduction de remplissage (« Que veux-tu lancer aujourd'hui ? »), icône dans chaque bloc.
+Dégradés, flou, translucidité, lueurs, ombres portées, un seul mot coloré dans un titre, étiquettes en majuscules,
+textes d'introduction de remplissage, icône dans chaque bloc.
 
 ## Textes
 

@@ -1,11 +1,12 @@
 import { Loader2 } from 'lucide-react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import type { Game } from '../lib/api';
+import { readableInk } from '../lib/color';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 const variants: Record<Variant, string> = {
   primary: 'bg-accent text-accent-ink font-semibold hover:brightness-110',
-  secondary: 'bg-raise-2 text-fg hover:bg-[#2c3543]',
+  secondary: 'bg-raise-2 text-fg hover:bg-[#404045]',
   ghost: 'text-muted hover:text-fg hover:bg-raise',
   danger: 'text-danger hover:bg-danger/10',
 };
@@ -53,7 +54,7 @@ export function GameIcon({ game, size = 36 }: { game: Pick<Game, 'name' | 'iconU
   if (game.iconUrl) return <img src={game.iconUrl} alt="" style={box} className="shrink-0 bg-raise object-cover" draggable={false} />;
   return (
     <div
-      style={{ ...box, fontSize: size * 0.46, background: `color-mix(in srgb, ${game.accent} 22%, #0f1217)`, color: game.accent }}
+      style={{ ...box, fontSize: size * 0.46, background: game.accent, color: readableInk(game.accent) }}
       className="grid shrink-0 place-items-center font-[family-name:var(--font-display)] font-bold"
     >
       {game.name.slice(0, 1).toUpperCase()}

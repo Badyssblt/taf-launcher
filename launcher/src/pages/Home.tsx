@@ -26,8 +26,7 @@ export function Home() {
               <button
                 key={g.slug}
                 onClick={() => go(g.slug)}
-                style={{ background: `color-mix(in srgb, ${g.accent} 9%, var(--color-raise))` }}
-                className="flex cursor-pointer items-center gap-3.5 rounded-[10px] px-4 py-3.5 text-left transition-[filter,transform] duration-100 hover:brightness-125 active:scale-[0.985]"
+                className="flex cursor-pointer items-center gap-3.5 rounded-[10px] bg-raise px-4 py-3.5 text-left transition-[background-color,transform] duration-100 hover:bg-raise-2 active:scale-[0.985]"
               >
                 <GameIcon game={g} size={44} />
                 <div className="min-w-0">
