@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.data/
+.env
+.env.*
+!.env.example
+*.log
+target/
+launcher/src-tauri/target/
+launcher/src-tauri/gen/
+*.key
+*.pem
+.DS_Store
