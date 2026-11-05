@@ -13,6 +13,24 @@ Backend Fastify sur le VPS, application Tauri 2 + React. Voir `README.md` pour l
 - **Le jeu ne doit jamais faire confiance à `-AccountID` seul** : il vérifie le ticket signé (voir `docs/GAME_INTEGRATION.md`).
 - **Commits** : à chaque étape stable (tests verts). Fins de ligne LF (`.gitattributes`).
 
+## Publier une version d'un jeu (Taf)
+
+Le dépôt des builds de Taf est `Badyssblt/taf` (public, builds seulement, jamais le code source). Le build à publier est le dossier
+empaqueté par Unreal : par défaut `C:\Users\badys\Documents\Unreal Projects\Taf 5.8\Saved\StagedBuilds\Windows` (contient `Taf.exe` ;
+`Binaries\Win64` n'est PAS un build). Demander la version (`x.y.z`, doit dépasser la précédente), les notes de version, stable ou bêta.
+
+```powershell
+node tools/make-release.mjs --dir "<dossier du build>" --game taf --version <x.y.z> --repo Badyssblt/taf `
+  --out "C:\Users\badys\Documents\taf-launcher\release-out\taf-<x.y.z>" --exclude "\.pdb$" --exclude "^Manifest_"
+& "C:\Program Files\GitHub CLI\gh.exe" release create v<x.y.z> release-out\taf-<x.y.z>\* --repo Badyssblt/taf `
+  --title "Taf <x.y.z>" --notes "<notes de version>" [--prerelease]   # --prerelease = canal bêta
+```
+
+Ensuite vérifier : `GET /api/games` (admin) voit la version, ou ouvrir le launcher. Le jeu est déclaré en base de production
+(slug `taf`, exécutable `Taf.exe`) ; les autres champs se changent dans le panneau d'admin. Les notes de version s'affichent dans le launcher
+(titres `#`, listes `-`). Ne jamais supprimer ni réécrire une release publiée : en publier une nouvelle.
+Test réel d'installation sans toucher au vrai launcher : voir `LAUNCHER_KEYRING_SERVICE` et `WEBVIEW2_USER_DATA_FOLDER` (profil isolé).
+
 ## Design
 
 Toute modification d'interface suit `docs/DESIGN.md` (tokens, typographie, structure, mouvement). Utiliser le skill `frontend-design`.
