@@ -94,6 +94,7 @@ export function Notes({ text }: { text: string }) {
   };
   for (const raw of text.split(/\r?\n/)) {
     const line = raw.trim();
+    if (/^<!--.*-->$/.test(line)) continue; // reperes techniques (ex. commit source), jamais affiches
     if (/^[-*]\s+/.test(line)) list.push(line.replace(/^[-*]\s+/, ''));
     else {
       flush();

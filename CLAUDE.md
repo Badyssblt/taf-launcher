@@ -15,6 +15,9 @@ Backend Fastify sur le VPS, application Tauri 2 + React. Voir `README.md` pour l
 
 ## Publier une version d'un jeu (Taf)
 
+**Utiliser le skill `publier-version`** (`.claude/skills/publier-version/SKILL.md`) : il collecte les changements (`tools/changes-since-release.mjs`),
+rédige les notes pour les joueurs, propose la version et publie après accord. Mémo de la procédure manuelle ci-dessous.
+
 Le dépôt des builds de Taf est `Badyssblt/taf` (public, builds seulement, jamais le code source). Le build à publier est le dossier
 empaqueté par Unreal : par défaut `C:\Users\badys\Documents\Unreal Projects\Taf 5.8\Saved\StagedBuilds\Windows` (contient `Taf.exe` ;
 `Binaries\Win64` n'est PAS un build). Demander la version (`x.y.z`, doit dépasser la précédente), les notes de version, stable ou bêta.
